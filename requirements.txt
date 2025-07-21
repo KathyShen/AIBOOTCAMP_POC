@@ -8,5 +8,5 @@ python-docx
 tiktoken
 langchain-community
 pycryptodome
-pydantic<2.7.0
+pydantic
 langchain-core
