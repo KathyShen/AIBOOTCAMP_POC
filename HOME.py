@@ -34,7 +34,7 @@ else:
         """
         <style>
         .stApp {
-            background-image: url('/static/HOME background.jpg');
+            background-image: url('https://github.com/KathyShen/AIBOOTCAMP_POC/raw/master/assets/AIBOOTCAMP_POC_HOME_background.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
