@@ -2,5 +2,3 @@ __pycache__/
 .env
 .streamlit/secrets.toml
 *.pyc
-uploads/
-vector_db/
