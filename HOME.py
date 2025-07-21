@@ -45,6 +45,9 @@ else:
             padding: 1.5em;
             margin-top: 2em;
         }
+        .stApp h1 {
+            color: white !important;
+        }
         </style>
         """,
         unsafe_allow_html=True
