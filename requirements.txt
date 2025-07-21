@@ -1,0 +1,13 @@
+streamlit
+openai
+langchain
+chromadb
+python-dotenv
+PyPDF2
+python-docx
+tiktoken
+langchain-community
+pycryptodome
+pydantic<2.7.0
+langchain-core
+hmac

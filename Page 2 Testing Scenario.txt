@@ -1,0 +1,1 @@
+A consortium of banks wants to collaboratively detect fraudulent transactions across their combined datasets without exposing sensitive customer information or violating data privacy regulations such as GDPR. What privacy-preserving technologies and strategies can enable secure analytics and fraud detection in this scenario?
