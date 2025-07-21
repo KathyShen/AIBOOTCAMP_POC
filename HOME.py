@@ -52,7 +52,7 @@ else:
         """,
         unsafe_allow_html=True
     )
-    st.title("Welcome to the RAG App")
+    st.title("Welcome to Our Site")
     st.markdown(
         """
         <div class='site-map' style='margin: 0 auto; max-width: 700px;'>
