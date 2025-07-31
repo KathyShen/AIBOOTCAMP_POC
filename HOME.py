@@ -58,9 +58,9 @@ else:
         <div class='site-map' style='margin: 0 auto; max-width: 700px;'>
             <h3>Site Map</h3>
             <ul>
-                <li><b>🧠 PETs Knowledge Hub</b>: Q&A powered by RAG, explore privacy technologies</li>
-                <li><b>🧑‍💻 PETs Adoption Advisor</b>: Get personalized advice for adopting PETs</li>
-                <li><b>Admin RAG</b>: Manage and analyze with preset vector database (admin only)</li>
+                <li><b>🧠 PETs Knowledge Hub</b>: Explore privacy enhancing technologies, based on the default knowledge database and any files uploaded by user</li>
+                <li><b>🧑‍💻 PETs Adoption Advisor</b>: Get personalized advice for adopting PETs, based on specific scenarios given by users</li>
+                <li><b>📬 Feedback to PETs Team </b>: Provide useful reference links and accept user feedbacks </li>
             </ul>
             <div style='margin-top:2em; text-align:left;'>
                 <span style='font-size:22px; font-weight:bold; color:#000;'>

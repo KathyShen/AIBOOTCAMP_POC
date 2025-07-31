@@ -9,6 +9,7 @@ st.set_page_config(
 
 st.title("About Us")
 
+st.title("Key Features")
 st.write("This is a Streamlit App that demonstrates how to use the OpenAI API to build knowledge database and provide RAG enhanced Q&A response, as well as to provide personalised PETs adoption advices based on specific user scenarios.")
 
 st.markdown("<u><b>Regarding the Login</b></u>", unsafe_allow_html=True)
