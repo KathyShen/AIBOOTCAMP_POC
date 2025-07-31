@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.file_handler import load_files
-from utils.vector_store import save_to_chroma, load_chroma
+from utils.vector_store import save_to_chroma
+from utils.pinecone_store import init_pinecone, load_pinecone
 
 import shutil
 import os
@@ -67,10 +68,10 @@ choice = st.radio(
 
 use_user_files = choice == "Upload your own files to enhance the knowledge base"
 
-if use_user_files:
-    if "temp_db_dir" not in st.session_state:
-        st.session_state.temp_db_dir = f"vector_db/user_temp_{uuid.uuid4().hex}"
+init_pinecone()
 
+user_db = None
+if use_user_files:
     uploaded_files = st.file_uploader("Upload 5-10 documents (PDF, TXT, DOCX)", type=["pdf", "txt", "docx"], accept_multiple_files=True)
     if uploaded_files:
         st.session_state.uploaded_files = uploaded_files
@@ -91,7 +92,7 @@ if use_user_files:
                     os.environ["OPENAI_API_KEY"] = st.session_state.api_key
                     openai.api_key = st.session_state.api_key
                     docs = load_files(upload_dir)
-                    save_to_chroma(docs, persist_directory=st.session_state.temp_db_dir)
+                    user_db = save_to_chroma(docs)
                     st.session_state.vector_db_ready = True
                     st.success("Vector DB created. You can now ask questions.")
                 except Exception as e:
@@ -108,13 +109,11 @@ else:
 
 # --- Q&A Section ---
 if st.session_state.get("vector_db_ready"):
-    # Always load the default knowledge DB
-    default_db_path = os.path.join("vector_db", "default knowledge")
-    main_db = load_chroma(default_db_path)
+    # Always load the default knowledge DB from Pinecone
+    main_db = load_pinecone(index_name="default-knowledge")
     retrievers = [main_db.as_retriever()]
-    # If user uploaded files, combine with their DB
-    if use_user_files and "temp_db_dir" in st.session_state:
-        user_db = load_chroma(st.session_state.temp_db_dir)
+    # If user uploaded files, combine with their DB (Chroma in-memory)
+    if use_user_files and user_db:
         retrievers.append(user_db.as_retriever())
     # Combine retrievers if more than one
     if len(retrievers) > 1:
