@@ -67,10 +67,9 @@ else:
                     🐾 <span style='font-size:0.98em; color:#888;'>Wait! These PETs don't bark, purr, or fetch sticks...</span> 🐾<br>
                     <span style='font-size: 0.98em; color:#888;'>
                         <b>PETs</b> here means <b>Privacy Enhancing Technologies</b>
-                        <span style="font-size:1.2em; vertical-align:middle; margin-left:4px; margin-right:2px;">🛡️</span>
-                        <span style="font-size:1.2em; vertical-align:middle; margin-left:2px;">🆔</span>,<br>
-                        not the adorable 
-                        <span style='font-size:0.98em;'>🐶🐱🐦🐢</span> 
+                        <span style="font-size:0.98em;">🛡️🖥️🆔</span>,<br>
+                        not the adorable
+                        <span style='font-size:0.98em;'>🐶🐱🐦🐢</span>
                         you might be thinking of!
                     </span>
                 </span>
