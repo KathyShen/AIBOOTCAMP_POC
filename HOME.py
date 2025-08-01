@@ -64,12 +64,13 @@ else:
             </ul>
             <div style='margin: 2em 0 1.5em 0; text-align: center;'>
                 <span style='font-size: 1.3em;'>
-                    🐾 <b>Wait! These PETs don't bark, purr, or fetch sticks...</b> 🐾<br>
-                    <span style='font-size: 1.1em;'>
+                    🐾 <span style='font-size:0.98em; color:#888;'>Wait! These PETs don't bark, purr, or fetch sticks...</span> 🐾<br>
+                    <span style='font-size: 0.98em; color:#888;'>
                         <b>PETs</b> here means <b>Privacy Enhancing Technologies</b> 
-                        <span style='font-size:1.2em; color:#1a73e8; vertical-align:middle;'>🔒</span>
-                        <span style='font-size:1.2em; color:#43a047; vertical-align:middle;'>🤖</span>,<br>
-                        <span style='font-size:0.98em; color:#888;'>not the adorable <span style='font-size:1.2em;'>🐶🐱🐦🐢</span> you might be thinking of!</span>
+                        <span style='font-size:0.98em;'>🔒🤖</span>,<br>
+                        not the adorable 
+                        <span style='font-size:0.98em;'>🐶🐱🐦🐢</span> 
+                        you might be thinking of!
                     </span>
                 </span>
             </div>
