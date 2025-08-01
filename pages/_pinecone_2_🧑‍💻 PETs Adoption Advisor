@@ -1,14 +1,9 @@
-# For Streamlit Cloud/Chroma sqlite compatibility (Python 3.11)
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 import streamlit as st
-
 import os
 from utils.sidebar import show_sidebar
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
+from utils.pinecone_store import init_pinecone, load_pinecone
+from utils.faiss_vector_store import save_to_faiss
 
 
 
@@ -63,23 +58,22 @@ if not problem_statement:
 
 
 
-
 if st.button("Analyze & Advise"):
     try:
         # Set OpenAI API key if needed
         if hasattr(st.session_state, "api_key"):
             os.environ["OPENAI_API_KEY"] = st.session_state.api_key
 
-        # Use Chroma for default knowledge base
-        embedding = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=st.session_state.api_key)
-        main_db = Chroma(
-            persist_directory="vector_db/default_db",
-            embedding_function=embedding
-        )
+        # Use Pinecone for default knowledge base
+        pinecone_client = init_pinecone()
+        main_db = load_pinecone(index_name="default-knowledge", pinecone_client=pinecone_client)
         retrievers = [main_db.as_retriever()]
-        # If user uploaded files in page 1, combine with their Chroma DB
-        user_db = st.session_state.get("user_db")
-        if user_db:
+        # If user uploaded files in page 1, combine with Chroma in-memory vector DB
+        if "temp_db_dir" in st.session_state:
+            # You may need to reload docs from temp_db_dir, e.g. with load_files
+            from utils.file_handler import load_files
+            docs = load_files(st.session_state.temp_db_dir)
+            user_db = save_to_faiss(docs)
             retrievers.append(user_db.as_retriever())
         # Combine retrievers if more than one
         if len(retrievers) > 1:
