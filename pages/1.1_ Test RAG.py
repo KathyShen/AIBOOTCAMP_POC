@@ -1,8 +1,12 @@
+
+# For Streamlit Cloud/Chroma sqlite compatibility (Python 3.11)
 import os
-os.environ["SQLITE3_CONNECT"] = "pysqlite3"
 import sys
-import sqlite3
-sys.modules["sqlite3"] = sqlite3
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
+except ImportError:
+    pass  # If not available, fallback to system sqlite3 (should not happen on Streamlit Cloud with correct requirements)
 
 import streamlit as st
 from utils.file_handler import load_files_from_uploads
