@@ -15,12 +15,12 @@ embedding = OpenAIEmbeddings(model="text-embedding-ada-002")
 # Load pre-existing Pinecone index using langchain's Pinecone wrapper
 def load_pinecone(index_name, pinecone_client):
     index = pinecone_client.Index(index_name)
-    return LangchainPinecone(index, embedding)
+    return PineconeVectorStore(index, embedding)
 
 # Save documents to Pinecone index using langchain's Pinecone wrapper
 def save_to_pinecone(docs, index_name, pinecone_client):
     index = pinecone_client.Index(index_name)
-    return LangchainPinecone.from_documents(
+    return PineconeVectorStore.from_documents(
         docs,
         embedding,
         index
