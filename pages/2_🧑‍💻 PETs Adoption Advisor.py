@@ -3,7 +3,7 @@ import streamlit as st
 import os
 from utils.sidebar import show_sidebar
 from utils.pinecone_store import init_pinecone, load_pinecone
-from utils.chroma_vector_store import load_chroma
+from utils.faiss_vector_store import save_to_faiss
 
 
 
@@ -71,7 +71,10 @@ if st.button("Analyze & Advise"):
         retrievers = [main_db.as_retriever()]
         # If user uploaded files in page 1, combine with Chroma in-memory vector DB
         if "temp_db_dir" in st.session_state:
-            user_db = load_chroma(st.session_state.temp_db_dir)
+            # You may need to reload docs from temp_db_dir, e.g. with load_files
+            from utils.file_handler import load_files
+            docs = load_files(st.session_state.temp_db_dir)
+            user_db = save_to_faiss(docs)
             retrievers.append(user_db.as_retriever())
         # Combine retrievers if more than one
         if len(retrievers) > 1:

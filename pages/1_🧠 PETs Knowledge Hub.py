@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.file_handler import load_files
-from utils.chroma_vector_store import save_to_chroma
+from utils.faiss_vector_store import save_to_faiss
 from utils.pinecone_store import init_pinecone, load_pinecone
 
 import shutil
@@ -92,7 +92,7 @@ if use_user_files:
                     os.environ["OPENAI_API_KEY"] = st.session_state.api_key
                     openai.api_key = st.session_state.api_key
                     docs = load_files(upload_dir)
-                    user_db = save_to_chroma(docs)
+                    user_db = save_to_faiss(docs)
                     st.session_state.vector_db_ready = True
                     st.success("Vector DB created. You can now ask questions.")
                 except Exception as e:
