@@ -112,6 +112,7 @@ if st.button("Analyze & Advise"):
                         st.markdown(ctx)
 
 
+
         # Chain-of-thoughts: each step includes previous outputs as context
         # 1. Summarize privacy challenges
         challenge_prompt = f"""
@@ -141,36 +142,130 @@ if st.button("Analyze & Advise"):
                         st.markdown(ctx)
             return answer
 
-        step1_output = run_and_store(challenge_prompt, "#### Key Data Privacy Challenges", "step1_output")
+        step1_output = run_and_store(challenge_prompt, "#### Step 1: Key Data Privacy Challenges", "step1_output")
 
-        # 2. Suggest PETs
-        pet_prompt = f"""
+
+        # 2. Assess alignment between objective and problem statement, and select relevant use cases
+        alignment_prompt = f"""
         Scenario Objective: {key_objective}
         User Problem Statement: {problem_statement}
         Key Data Privacy Challenges: {step1_output}
 
-        Step 2: Based on the above, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges. Explain your reasoning.
+        Step 2a: Assess whether the selected objective aligns with the problem statement described. If not, explain the mismatch and suggest how to clarify or adjust the objective or problem statement.
         """
-        step2_output = run_and_store(pet_prompt, "#### Suggested PETs", "step2_output")
+        alignment_output = run_and_store(alignment_prompt, "#### Step 2a: Objective-Problem Alignment Assessment", "step2_output")
 
-        # 3. Assess suitability of user-indicated PETs
+        # 2b. Retrieve and display relevant use cases from the database
+        usecase_prompt = f"""
+        Based on the user's scenario objective and problem statement below, select the most relevant use cases from the knowledge base:
+
+        Scenario Objective: {key_objective}
+        User Problem Statement: {problem_statement}
+
+        For each relevant use case, provide:
+        - The use case name or title
+        - What objective or problem it solved that is similar to the user's case
+        - What PET was used in that use case
+        Present the results as a simple list, one use case per bullet point, with the above details for each.
+        """
+        def run_and_store_usecases(prompt, section_title, key):
+            chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True)
+            output = chain.invoke({"query": prompt})
+            answer = output["result"] if isinstance(output, dict) and "result" in output else output
+            # Try to format as bullet points for clarity
+            import re
+            lines = answer.splitlines()
+            bullet_lines = []
+            for line in lines:
+                if re.match(r"^[-*•] ", line.strip()):
+                    bullet_lines.append(line)
+                elif line.strip():
+                    bullet_lines.append(f"- {line.strip()}")
+            formatted_answer = "\n".join(bullet_lines)
+            st.markdown(section_title)
+            st.write(formatted_answer)
+            st.session_state[key] = answer
+            # Show context
+            context_blurbs = []
+            if isinstance(output, dict) and "source_documents" in output:
+                for i, doc in enumerate(output["source_documents"], 1):
+                    snippet = doc.page_content if hasattr(doc, "page_content") else str(doc)
+                    source = doc.metadata.get("source") if hasattr(doc, "metadata") and "source" in doc.metadata else None
+                    context_blurbs.append(f"**Context {i}:** {snippet[:500]}" + (f"\n_Source: {source}_" if source else ""))
+            if context_blurbs:
+                with st.expander(f"Show retrieved context for {section_title.replace('#### ','')}"):
+                    for ctx in context_blurbs:
+                        st.markdown(ctx)
+            return answer
+
+        run_and_store_usecases(usecase_prompt, "#### Step 2b: Relevant Use Cases from Knowledge Base", "step2b_output")
+
+        # 3. Suggest PETs
+        pet_prompt = f"""
+        Scenario Objective: {key_objective}
+        User Problem Statement: {problem_statement}
+        Key Data Privacy Challenges: {step1_output}
+        Objective-Problem Alignment Assessment: {alignment_output}
+
+        Step 3: Based on the above, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges. List each PET as a bullet point and explain your reasoning for each.
+        """
+        # Custom post-processing to ensure bullet points for PETs
+        def run_and_store_bullets(prompt, section_title, key):
+            chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True)
+            output = chain.invoke({"query": prompt})
+            answer = output["result"] if isinstance(output, dict) and "result" in output else output
+            # Try to format PETs as bullet points if not already
+            import re
+            lines = answer.splitlines()
+            bullet_lines = []
+            for line in lines:
+                # If line looks like a PET name (heuristic: matches known PETs or starts with PET-like phrase)
+                if re.match(r"^(Differential Privacy|Homomorphic Encryption|Synthetic Data|Federated Learning|Secure Multi-Party Computation|Trusted Execution Environments|Zero-knowledge Proof)", line.strip(), re.I):
+                    bullet_lines.append(f"- {line.strip()}")
+                elif re.match(r"^[-*•] ", line.strip()):
+                    bullet_lines.append(line)
+                else:
+                    bullet_lines.append(line)
+            formatted_answer = "\n".join(bullet_lines)
+            st.markdown(section_title)
+            st.write(formatted_answer)
+            st.session_state[key] = answer
+            # Show context
+            context_blurbs = []
+            if isinstance(output, dict) and "source_documents" in output:
+                for i, doc in enumerate(output["source_documents"], 1):
+                    snippet = doc.page_content if hasattr(doc, "page_content") else str(doc)
+                    source = doc.metadata.get("source") if hasattr(doc, "metadata") and "source" in doc.metadata else None
+                    context_blurbs.append(f"**Context {i}:** {snippet[:500]}" + (f"\n_Source: {source}_" if source else ""))
+            if context_blurbs:
+                with st.expander(f"Show retrieved context for {section_title.replace('#### ','')}"):
+                    for ctx in context_blurbs:
+                        st.markdown(ctx)
+            return answer
+
+        step3_output = run_and_store_bullets(pet_prompt, "#### Step 3: Suggested PETs", "step3_output")
+
+
+        # 4. Assess suitability of user-indicated PETs
         if pet_interest:
             suitability_prompt = f"""
             Scenario Objective: {key_objective}
             User Problem Statement: {problem_statement}
             PETs of Interest: {', '.join(pet_interest)}
             Key Data Privacy Challenges: {step1_output}
-            Suggested PETs: {step2_output}
+            Objective-Problem Alignment Assessment: {alignment_output}
+            Suggested PETs: {step3_output}
 
-            Step 3: Assess whether the following PETs are suitable for this scenario: {', '.join(pet_interest)}. Justify your assessment using the above context.
+            Step 4: Assess whether the following PETs are suitable for this scenario: {', '.join(pet_interest)}. Justify your assessment using the above context.
             """
-            step3_output = run_and_store(suitability_prompt, "#### Suitability Assessment of User-Selected PETs", "step3_output")
+            step4_output = run_and_store(suitability_prompt, "#### Step 4: Suitability Assessment of User-Selected PETs", "step4_output")
         else:
-            step3_output = None
+            step4_output = None
 
 
-        # 4. Suggest checklist questions for adopting PETs, logic based on user PETs and suggested PETs
-        # Try to extract suggested PETs as a list from step2_output (LLM output, so fallback to string match)
+
+        # 5. Suggest checklist questions for adopting PETs, logic based on user PETs and suggested PETs
+        # Try to extract suggested PETs as a list from step3_output (LLM output, so fallback to string match)
         import re
         def extract_pet_names(text):
             # Try to extract PETs from a bulleted or comma-separated list
@@ -191,7 +286,7 @@ if st.button("Analyze & Advise"):
                                 pets.add(known)
             return list(pets)
 
-        suggested_pets = extract_pet_names(step2_output)
+        suggested_pets = extract_pet_names(step3_output)
         user_pets = set(pet_interest)
         # If user PETs overlap with suggested PETs, use those; else use suggested PETs
         relevant_pets = list(user_pets & set(suggested_pets)) if user_pets & set(suggested_pets) else suggested_pets
@@ -201,11 +296,13 @@ if st.button("Analyze & Advise"):
         Scenario Objective: {key_objective}
         User Problem Statement: {problem_statement}
         Key Data Privacy Challenges: {step1_output}
+        Objective-Problem Alignment Assessment: {alignment_output}
+        Suggested PETs: {step3_output}
         PETs to focus on: {', '.join(relevant_pets) if relevant_pets else 'None'}
 
-        Step 4: For each PET listed above, generate a checklist of relevant adoption questions for decision makers to consider, tailored to the industry/domain and objective. If no PETs are listed, suggest general adoption questions for privacy-enhancing technologies.
+        Step 5: For each PET listed above, generate a checklist of relevant adoption questions for decision makers to consider, tailored to the industry/domain and objective. If no PETs are listed, suggest general adoption questions for privacy-enhancing technologies.
         """
-        run_and_store(adoption_prompt, "#### Adoption Checklist Questions for PETs", "step4_output")
+        run_and_store(adoption_prompt, "#### Step 5: Adoption Checklist Questions for PETs", "step5_output")
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
