@@ -1,3 +1,8 @@
+import os
+os.environ["SQLITE3_CONNECT"] = "pysqlite3"
+import sys
+import pysqlite3
+sys.modules["sqlite3"] = pysqlite3
 
 import streamlit as st
 from utils.file_handler import load_files_from_uploads
