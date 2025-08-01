@@ -35,12 +35,16 @@ def get_user_inputs():
 # --- User Input ---
 problem_statement, pet_interest = get_user_inputs()
 
+
 if st.button("Analyze & Advise") and problem_statement:
-    # Load default and user vector DBs
-    default_db_path = os.path.join("vector_db", "default knowledge")
-    main_db = load_chroma(default_db_path)
+    # Use Pinecone for default knowledge base
+    from utils.pinecone_store import init_pinecone, load_pinecone
+    pinecone_client = init_pinecone()
+    main_db = load_pinecone(index_name="default-knowledge", pinecone_client=pinecone_client)
     retrievers = [main_db.as_retriever()]
+    # If user uploaded files in page 1, combine with Chroma in-memory vector DB
     if "temp_db_dir" in st.session_state:
+        from utils.chroma_vector_store import load_chroma
         user_db = load_chroma(st.session_state.temp_db_dir)
         retrievers.append(user_db.as_retriever())
     # Combine retrievers if more than one
