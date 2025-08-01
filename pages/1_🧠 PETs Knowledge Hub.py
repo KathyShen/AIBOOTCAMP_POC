@@ -1,15 +1,12 @@
+
 import streamlit as st
-from utils.file_handler import load_files
+from utils.file_handler import load_files_from_uploads
 from utils.faiss_vector_store import save_to_faiss
 from utils.pinecone_store import init_pinecone, load_pinecone
-
-import shutil
 import os
-import uuid
 from utils.sidebar import show_sidebar
 import openai
 from langchain.prompts import PromptTemplate
-#from dotenv import load_dotenv
 
 show_sidebar()
 
@@ -83,15 +80,9 @@ if use_user_files:
         else:
             if st.button("Generate Vector DB"):
                 try:
-                    upload_dir = "uploads"
-                    shutil.rmtree(upload_dir, ignore_errors=True)
-                    os.makedirs(upload_dir, exist_ok=True)
-                    for file in files:
-                        with open(os.path.join(upload_dir, file.name), "wb") as f:
-                            f.write(file.getbuffer())
                     os.environ["OPENAI_API_KEY"] = st.session_state.api_key
                     openai.api_key = st.session_state.api_key
-                    docs = load_files(upload_dir)
+                    docs = load_files_from_uploads(files)
                     user_db = save_to_faiss(docs)
                     st.session_state.vector_db_ready = True
                     st.success("Vector DB created. You can now ask questions.")
@@ -188,9 +179,5 @@ if st.session_state.get("vector_db_ready"):
                     for ctx in contexts:
                         st.markdown(ctx)
 
-import atexit
-def cleanup_temp_db():
-    temp_db_dir = st.session_state.get("temp_db_dir")
-    if temp_db_dir and os.path.exists(temp_db_dir):
-        shutil.rmtree(temp_db_dir, ignore_errors=True)
-atexit.register(cleanup_temp_db)
+
+# No temp_db_dir cleanup needed for in-memory FAISS DBs

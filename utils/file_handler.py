@@ -1,3 +1,27 @@
+from langchain_core.documents import Document as LCDocument
+def load_files_from_uploads(uploaded_files):
+    """
+    Accepts a list of st.file_uploader objects and returns a list of LangChain Documents.
+    """
+    docs = []
+    from PyPDF2 import PdfReader
+    from docx import Document as DocxDocument
+    for file in uploaded_files:
+        filename = file.name
+        if filename.endswith(".txt"):
+            content = file.getvalue().decode("utf-8")
+        elif filename.endswith(".pdf"):
+            reader = PdfReader(file)
+            content = ""
+            for page in reader.pages:
+                content += page.extract_text() or ""
+        elif filename.endswith(".docx"):
+            doc = DocxDocument(file)
+            content = "\n".join([para.text for para in doc.paragraphs])
+        else:
+            continue
+        docs.append(LCDocument(page_content=content, metadata={"source": filename}))
+    return docs
 import os
 from PyPDF2 import PdfReader
 from docx import Document
