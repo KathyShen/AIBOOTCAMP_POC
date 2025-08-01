@@ -14,7 +14,9 @@ def save_to_chroma(docs, embedding=None, chunk_size=500, chunk_overlap=100):
         embedding = OpenAIEmbeddings()
     db = Chroma.from_documents(
         documents=splits,
-        embedding=embedding
+        embedding=embedding,
+        persist_directory=None,  # in-memory
+        client_settings={"chromadb_impl": "duckdb+parquet"}  # force DuckDB backend
     )
     return db
 
