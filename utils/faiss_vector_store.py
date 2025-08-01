@@ -3,13 +3,18 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-def save_to_faiss(docs, embedding=None, chunk_size=500, chunk_overlap=100):
+def save_to_faiss(docs, embedding=None, chunk_size=1000, chunk_overlap=200):
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    # If docs are already split, skip splitting
-    if hasattr(docs, '__iter__') and all(isinstance(doc, str) for doc in docs):
-        splits = docs
-    else:
-        splits = splitter.split_documents(docs)
+    splits = []
+    for doc in docs:
+        meta = doc.metadata.copy() if hasattr(doc, 'metadata') else {}
+        if hasattr(doc, 'page_content'):
+            chunks = splitter.create_documents([doc.page_content])
+            for chunk in chunks:
+                chunk.metadata = meta
+            splits.extend(chunks)
+        else:
+            splits.append(doc)
     if embedding is None:
         embedding = OpenAIEmbeddings()
     db = FAISS.from_documents(splits, embedding)
