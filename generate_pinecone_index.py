@@ -1,8 +1,10 @@
 # python generate_pinecone_index.py --index_name "default-knowledge"
 import streamlit as st
+
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Pinecone as LangchainPinecone
+from langchain_pinecone import Pinecone as LangchainPinecone
 from utils.file_handler import load_files
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # New Pinecone SDK imports
 from pinecone import Pinecone, ServerlessSpec
@@ -44,13 +46,27 @@ if __name__ == "__main__":
     docs = load_files(args.input_dir)
     print(f"Loaded {len(docs)} documents from {args.input_dir}")
 
+    # Chunk documents for better retrieval granularity
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=800,
+        chunk_overlap=100
+    )
+    chunked_docs = []
+    for doc in docs:
+        splits = text_splitter.create_documents([doc.page_content])
+        # Attach metadata from original doc
+        for split in splits:
+            split.metadata = doc.metadata.copy() if hasattr(doc, 'metadata') else {}
+        chunked_docs.extend(splits)
+    print(f"Split into {len(chunked_docs)} chunks.")
+
     # Create embeddings
     embedding = OpenAIEmbeddings(model=args.embedding_model)
 
-    # Upload to Pinecone using LangChain
+    # Upload to Pinecone using LangChain (new API)
     vectorstore = LangchainPinecone.from_documents(
-        documents=docs,
+        documents=chunked_docs,
         embedding=embedding,
         index_name=args.index_name
     )
-    print(f"Documents uploaded to Pinecone index: {args.index_name}")
+    print(f"Chunks uploaded to Pinecone index: {args.index_name}")
