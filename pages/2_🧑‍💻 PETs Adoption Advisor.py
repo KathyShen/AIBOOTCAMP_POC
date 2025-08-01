@@ -28,9 +28,8 @@ def get_user_inputs():
         "Select Key Objective",
         options=objective_options
     )
-    st.markdown("### 2. Please ellaborate your scenario with more details:",
-                 help="Example problem statement: 'We want to collaborate with other banks to detect fraudulent transactions across our combined datasets without exposing sensitive customer information or violating data privacy regulations. What technologies and strategies can enable secure analytics and fraud detection in this scenario?")
-    problem_statement = st.text_area("Problem Statement", help="Describe your scenario and privacy needs.")
+    st.markdown("### 2. Please ellaborate your scenario with more details:")
+    problem_statement = st.text_area("Problem Statement", help="Example: We want to collaborate with other banks to detect fraudulent transactions across our combined datasets without exposing sensitive customer information or violating data privacy regulations. What technologies and strategies can enable secure analytics and fraud detection in this scenario?")
     st.markdown("### 3. Which PET(s) are you interested in?")
     pet_options = [
         "Differential Privacy",
