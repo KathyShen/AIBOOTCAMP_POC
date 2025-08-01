@@ -111,7 +111,6 @@ if st.button("Analyze & Advise"):
         challenge_prompt = f"""
         Scenario Objective: {key_objective}
         User Problem Statement: {problem_statement}
-        PETs of Interest: {', '.join(pet_interest) if pet_interest else 'None provided'}
 
         Step 1: Summarize the key data privacy challenges in this scenario. Be specific and concise.
         """
@@ -142,7 +141,6 @@ if st.button("Analyze & Advise"):
         pet_prompt = f"""
         Scenario Objective: {key_objective}
         User Problem Statement: {problem_statement}
-        PETs of Interest: {', '.join(pet_interest) if pet_interest else 'None provided'}
         Key Data Privacy Challenges: {step1_output}
 
         Step 2: Based on the above, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges. Explain your reasoning.
@@ -164,18 +162,44 @@ if st.button("Analyze & Advise"):
         else:
             step3_output = None
 
-        # 4. Suggest adoption questions
+
+        # 4. Suggest checklist questions for adopting PETs, logic based on user PETs and suggested PETs
+        # Try to extract suggested PETs as a list from step2_output (LLM output, so fallback to string match)
+        import re
+        def extract_pet_names(text):
+            # Try to extract PETs from a bulleted or comma-separated list
+            pets = set()
+            # Bullet points
+            for line in text.splitlines():
+                m = re.match(r"[-*•]\s*([A-Za-z0-9\- ]+)", line)
+                if m:
+                    pets.add(m.group(1).strip())
+            # Comma separated
+            if not pets:
+                for part in re.split(r",|;|\n", text):
+                    part = part.strip()
+                    if part and part.lower() not in ["potential pets include", "suggested pets:"]:
+                        # Heuristic: only add if matches known PETs
+                        for known in ["Differential Privacy", "Homomorphic Encryption", "Synthetic Data", "Federated Learning", "Secure Multi-Party Computation", "Trusted Execution Environments", "Zero-knowledge Proof"]:
+                            if known.lower() in part.lower():
+                                pets.add(known)
+            return list(pets)
+
+        suggested_pets = extract_pet_names(step2_output)
+        user_pets = set(pet_interest)
+        # If user PETs overlap with suggested PETs, use those; else use suggested PETs
+        relevant_pets = list(user_pets & set(suggested_pets)) if user_pets & set(suggested_pets) else suggested_pets
+
         adoption_prompt = f"""
+        Industry/Domain: Please infer from the scenario/problem statement if possible.
         Scenario Objective: {key_objective}
         User Problem Statement: {problem_statement}
-        PETs of Interest: {', '.join(pet_interest) if pet_interest else 'None provided'}
         Key Data Privacy Challenges: {step1_output}
-        Suggested PETs: {step2_output}
-        Suitability Assessment: {step3_output if step3_output else 'N/A'}
+        PETs to focus on: {', '.join(relevant_pets) if relevant_pets else 'None'}
 
-        Step 4: Suggest relevant adoption questions for decision makers to explore for this scenario and privacy needs, using all the above context.
+        Step 4: For each PET listed above, generate a checklist of relevant adoption questions for decision makers to consider, tailored to the industry/domain and objective. If no PETs are listed, suggest general adoption questions for privacy-enhancing technologies.
         """
-        run_and_store(adoption_prompt, "#### Adoption Questions for Decision Makers", "step4_output")
+        run_and_store(adoption_prompt, "#### Adoption Checklist Questions for PETs", "step4_output")
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
