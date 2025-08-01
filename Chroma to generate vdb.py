@@ -4,7 +4,7 @@
 import argparse
 import os
 from utils.file_handler import load_files
-from utils.vector_store import save_to_chroma
+from utils.chroma_vector_store import save_to_chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 try:
     from langchain_openai import OpenAIEmbeddings

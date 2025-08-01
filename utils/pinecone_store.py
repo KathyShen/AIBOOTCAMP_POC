@@ -1,24 +1,27 @@
-import pinecone
+
+from pinecone import Pinecone
 import streamlit as st
 from langchain_openai import OpenAIEmbeddings
-from langchain.vectorstores import Pinecone
+from langchain.vectorstores import Pinecone as LangchainPinecone
 
-# Initialize Pinecone from Streamlit secrets
+
+# Initialize Pinecone client from Streamlit secrets
 def init_pinecone():
     api_key = st.secrets["PINECONE_API_KEY"]
-    environment = st.secrets.get("PINECONE_ENVIRONMENT", "us-east-1-aws")  # Change default if needed
-    pinecone.init(api_key=api_key, environment=environment)
+    return Pinecone(api_key=api_key)
 
 embedding = OpenAIEmbeddings(model="text-embedding-ada-002")
 
-# Load pre-existing Pinecone index
-def load_pinecone(index_name):
-    return Pinecone(index_name=index_name, embedding=embedding)
 
-# Save documents to Pinecone index
-def save_to_pinecone(docs, index_name):
-    return Pinecone.from_documents(
+# Load pre-existing Pinecone index using langchain's Pinecone wrapper
+def load_pinecone(index_name, pinecone_client):
+    return LangchainPinecone(index_name=index_name, embedding=embedding, pinecone_api= pinecone_client)
+
+# Save documents to Pinecone index using langchain's Pinecone wrapper
+def save_to_pinecone(docs, index_name, pinecone_client):
+    return LangchainPinecone.from_documents(
         documents=docs,
         embedding=embedding,
-        index_name=index_name
+        index_name=index_name,
+        pinecone_api=pinecone_client
     )

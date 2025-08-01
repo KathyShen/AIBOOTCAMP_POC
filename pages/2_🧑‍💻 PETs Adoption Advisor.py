@@ -1,8 +1,7 @@
 import streamlit as st
-from utils.vector_store import load_chroma
+from utils.chroma_vector_store import load_chroma
 from utils.rag_pipeline import build_qa_chain
 from utils.sidebar import show_sidebar
-from utils.user_input_handler import get_user_inputs
 import os
 #from dotenv import load_dotenv
 
@@ -15,6 +14,23 @@ if st.session_state.username not in ["admin", "user"]:
     st.stop()
 
 st.title("🔍 PETs Adoption Advisor")
+
+def get_user_inputs():
+    st.markdown("### 1. Describe your data privacy problem statement")
+    problem_statement = st.text_area("Problem Statement", help="Describe your scenario and privacy needs.")
+    st.markdown("### 2. Which PET(s) are you interested in?")
+    pet_options = [
+        "Differential Privacy",
+        "Homomorphic Encryption",
+        "Synthetic Data",
+        "Zero-knowledge Proof"
+    ]
+    pet_interest = st.multiselect(
+        "Select PET(s) of Interest",
+        options=pet_options,
+        help="You can select one or more privacy-enhancing technologies (PETs)."
+    )
+    return problem_statement, pet_interest
 
 # --- User Input ---
 problem_statement, pet_interest = get_user_inputs()

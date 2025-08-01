@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.file_handler import load_files
-from utils.vector_store import save_to_chroma
+from utils.chroma_vector_store import save_to_chroma
 from utils.pinecone_store import init_pinecone, load_pinecone
 
 import shutil
