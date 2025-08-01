@@ -110,7 +110,8 @@ else:
 # --- Q&A Section ---
 if st.session_state.get("vector_db_ready"):
     # Always load the default knowledge DB from Pinecone
-    main_db = load_pinecone(index_name="default-knowledge")
+    pinecone_client = init_pinecone()
+    main_db = load_pinecone(index_name="default-knowledge", pinecone_client=pinecone_client)
     retrievers = [main_db.as_retriever()]
     # If user uploaded files, combine with their DB (Chroma in-memory)
     if use_user_files and user_db:

@@ -1,7 +1,7 @@
 
 from pinecone import Pinecone
 import streamlit as st
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Pinecone as LangchainPinecone
 
 
