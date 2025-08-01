@@ -1,6 +1,6 @@
 import os
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 
 def save_to_chroma(docs, embedding=None, chunk_size=500, chunk_overlap=100):

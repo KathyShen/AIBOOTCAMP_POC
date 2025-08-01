@@ -2,8 +2,7 @@
 from pinecone import Pinecone
 import streamlit as st
 from langchain_openai import OpenAIEmbeddings
-from langchain_pinecone import Pinecone as LangchainPinecone
-
+from langchain_pinecone import PineconeVectorStore
 
 # Initialize Pinecone client from Streamlit secrets
 def init_pinecone():
