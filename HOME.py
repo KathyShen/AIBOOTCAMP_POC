@@ -67,9 +67,8 @@ else:
                     🐾 <span style='font-size:0.98em; color:#888;'>Wait! These PETs don't bark, purr, or fetch sticks...</span> 🐾<br>
                     <span style='font-size: 0.98em; color:#888;'>
                         <b>PETs</b> here means <b>Privacy Enhancing Technologies</b>
-                        <span style="vertical-align:middle;">
-                            <svg width="22" height="22" style="vertical-align:middle; margin-left:2px; margin-right:2px;" viewBox="0 0 24 24"><path fill="#1a73e8" d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/></svg>
-                            <svg width="22" height="22" style="vertical-align:middle; margin-left:2px;" viewBox="0 0 24 24"><path fill="#43a047" d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm1 17.93V20a1 1 0 0 1-2 0v-.07A8.014 8.014 0 0 1 4.07 13H6a1 1 0 0 1 0 2H4.07A8.014 8.014 0 0 1 11 19.93zm7.93-7.93H18a1 1 0 0 1 0-2h1.93A8.014 8.014 0 0 1 13 4.07V6a1 1 0 0 1-2 0V4.07A8.014 8.014 0 0 1 4.07 11H6a1 1 0 0 1 0 2H4.07A8.014 8.014 0 0 1 11 19.93z"/></svg>
+                        <span style="vertical-align:middle; margin-left:4px; margin-right:2px;">
+                            <svg width="22" height="22" style="vertical-align:middle;" viewBox="0 0 24 24"><path fill="#1a73e8" d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/></svg>
                         </span>,<br>
                         not the adorable 
                         <span style='font-size:0.98em;'>🐶🐱🐦🐢</span> 
