@@ -1,12 +1,7 @@
-
 # For Streamlit Cloud/Chroma sqlite compatibility (Python 3.11)
-import os
+__import__('pysqlite3')
 import sys
-try:
-    import pysqlite3
-    sys.modules["sqlite3"] = pysqlite3
-except ImportError:
-    pass  # If not available, fallback to system sqlite3 (should not happen on Streamlit Cloud with correct requirements)
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 import streamlit as st
 from utils.file_handler import load_files_from_uploads
@@ -78,47 +73,52 @@ use_user_files = choice == "Upload your own files to enhance the knowledge base"
 # --- Chroma setup ---
 embedding = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=st.session_state.api_key)
 
+
+# --- User-uploaded file handling and user_db creation ---
 user_db = None
 if use_user_files:
-    uploaded_files = st.file_uploader("Upload 5-10 documents (PDF, TXT, DOCX)", type=["pdf", "txt", "docx"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload 1-10 documents (PDF, TXT, DOCX)", type=["pdf", "txt", "docx"], accept_multiple_files=True)
     if uploaded_files:
         st.session_state.uploaded_files = uploaded_files
 
-    if st.session_state.get("uploaded_files"):
-        files = st.session_state.uploaded_files
-        if not (5 <= len(files) <= 10):
-            st.warning("Please upload between 5 and 10 files.")
+    files = st.session_state.get("uploaded_files")
+    if files and (1 <= len(files) <= 10):
+        if st.button("Generate Vector DB") or st.session_state.get("force_user_db_rebuild"):
+            try:
+                os.environ["OPENAI_API_KEY"] = st.session_state.api_key
+                openai.api_key = st.session_state.api_key
+                docs = load_files_from_uploads(files)
+                from langchain.text_splitter import RecursiveCharacterTextSplitter
+                text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+                chunked_docs = []
+                for doc in docs:
+                    splits = text_splitter.create_documents([doc.page_content])
+                    for split in splits:
+                        split.metadata = doc.metadata.copy() if hasattr(doc, 'metadata') else {}
+                    chunked_docs.extend(splits)
+                user_db = Chroma.from_documents(
+                    documents=chunked_docs,
+                    embedding=embedding
+                )
+                st.session_state.user_db = user_db
+                st.session_state.vector_db_ready = True
+                st.session_state.force_user_db_rebuild = False
+                st.success("Vector DB created. You can now ask questions.")
+            except Exception as e:
+                if "401" in str(e) or "invalid_api_key" in str(e):
+                    st.session_state.api_key = ""
+                    st.session_state.api_key_valid = False
+                    st.session_state.api_key_error = True
+                    st.rerun()
+                else:
+                    st.error(f"Error generating vector DB: {e}")
         else:
-            if st.button("Generate Vector DB"):
-                try:
-                    os.environ["OPENAI_API_KEY"] = st.session_state.api_key
-                    openai.api_key = st.session_state.api_key
-                    docs = load_files_from_uploads(files)
-                    # Use Chroma in-memory for user files
-                    from langchain.text_splitter import RecursiveCharacterTextSplitter
-                    text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
-                    chunked_docs = []
-                    for doc in docs:
-                        splits = text_splitter.create_documents([doc.page_content])
-                        for split in splits:
-                            split.metadata = doc.metadata.copy() if hasattr(doc, 'metadata') else {}
-                        chunked_docs.extend(splits)
-                    user_db = Chroma.from_documents(
-                        documents=chunked_docs,
-                        embedding=embedding
-                    )
-                    st.session_state.vector_db_ready = True
-                    st.success("Vector DB created. You can now ask questions.")
-                except Exception as e:
-                    if "401" in str(e) or "invalid_api_key" in str(e):
-                        st.session_state.api_key = ""
-                        st.session_state.api_key_valid = False
-                        st.session_state.api_key_error = True
-                        st.rerun()
-                    else:
-                        st.error(f"Error generating vector DB: {e}")
+            user_db = st.session_state.get("user_db")
+    elif files and not (1 <= len(files) <= 10):
+        st.warning("Please upload between 1 and 10 files.")
+    else:
+        st.session_state.vector_db_ready = not use_user_files
 else:
-    # If not using user files, set vector_db_ready to True to enable Q&A
     st.session_state.vector_db_ready = True
 
 
@@ -131,6 +131,7 @@ if st.session_state.get("vector_db_ready"):
     )
     retrievers = [main_db.as_retriever()]
     # If user uploaded files, combine with their Chroma DB
+    user_db = st.session_state.get("user_db")
     if use_user_files and user_db:
         retrievers.append(user_db.as_retriever())
     # Combine retrievers if more than one
