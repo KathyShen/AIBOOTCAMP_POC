@@ -105,22 +105,77 @@ if st.button("Analyze & Advise"):
                     for ctx in context_blurbs:
                         st.markdown(ctx)
 
+
+        # Chain-of-thoughts: each step includes previous outputs as context
         # 1. Summarize privacy challenges
-        challenge_prompt = f"Summarize the key data privacy challenges in this scenario: {problem_statement}"
-        run_qa_and_show(challenge_prompt, "#### Key Data Privacy Challenges")
+        challenge_prompt = f"""
+        Scenario Objective: {key_objective}
+        User Problem Statement: {problem_statement}
+        PETs of Interest: {', '.join(pet_interest) if pet_interest else 'None provided'}
+
+        Step 1: Summarize the key data privacy challenges in this scenario. Be specific and concise.
+        """
+        st.session_state.step1_output = None
+        def run_and_store(prompt, section_title, key):
+            chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True)
+            output = chain.invoke({"query": prompt})
+            answer = output["result"] if isinstance(output, dict) and "result" in output else output
+            st.markdown(section_title)
+            st.write(answer)
+            st.session_state[key] = answer
+            # Show context
+            context_blurbs = []
+            if isinstance(output, dict) and "source_documents" in output:
+                for i, doc in enumerate(output["source_documents"], 1):
+                    snippet = doc.page_content if hasattr(doc, "page_content") else str(doc)
+                    source = doc.metadata.get("source") if hasattr(doc, "metadata") and "source" in doc.metadata else None
+                    context_blurbs.append(f"**Context {i}:** {snippet[:500]}" + (f"\n_Source: {source}_" if source else ""))
+            if context_blurbs:
+                with st.expander(f"Show retrieved context for {section_title.replace('#### ','')}"):
+                    for ctx in context_blurbs:
+                        st.markdown(ctx)
+            return answer
+
+        step1_output = run_and_store(challenge_prompt, "#### Key Data Privacy Challenges", "step1_output")
 
         # 2. Suggest PETs
-        pet_prompt = f"Based on the scenario, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges."
-        run_qa_and_show(pet_prompt, "#### Suggested PETs")
+        pet_prompt = f"""
+        Scenario Objective: {key_objective}
+        User Problem Statement: {problem_statement}
+        PETs of Interest: {', '.join(pet_interest) if pet_interest else 'None provided'}
+        Key Data Privacy Challenges: {step1_output}
+
+        Step 2: Based on the above, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges. Explain your reasoning.
+        """
+        step2_output = run_and_store(pet_prompt, "#### Suggested PETs", "step2_output")
 
         # 3. Assess suitability of user-indicated PETs
         if pet_interest:
-            suitability_prompt = f"Assess whether the following PETs are suitable for this scenario: {', '.join(pet_interest)}. Justify your assessment."
-            run_qa_and_show(suitability_prompt, "#### Suitability Assessment of User-Selected PETs")
+            suitability_prompt = f"""
+            Scenario Objective: {key_objective}
+            User Problem Statement: {problem_statement}
+            PETs of Interest: {', '.join(pet_interest)}
+            Key Data Privacy Challenges: {step1_output}
+            Suggested PETs: {step2_output}
+
+            Step 3: Assess whether the following PETs are suitable for this scenario: {', '.join(pet_interest)}. Justify your assessment using the above context.
+            """
+            step3_output = run_and_store(suitability_prompt, "#### Suitability Assessment of User-Selected PETs", "step3_output")
+        else:
+            step3_output = None
 
         # 4. Suggest adoption questions
-        adoption_prompt = f"Suggest relevant adoption questions for decision makers to explore for this scenario and privacy needs."
-        run_qa_and_show(adoption_prompt, "#### Adoption Questions for Decision Makers")
+        adoption_prompt = f"""
+        Scenario Objective: {key_objective}
+        User Problem Statement: {problem_statement}
+        PETs of Interest: {', '.join(pet_interest) if pet_interest else 'None provided'}
+        Key Data Privacy Challenges: {step1_output}
+        Suggested PETs: {step2_output}
+        Suitability Assessment: {step3_output if step3_output else 'N/A'}
+
+        Step 4: Suggest relevant adoption questions for decision makers to explore for this scenario and privacy needs, using all the above context.
+        """
+        run_and_store(adoption_prompt, "#### Adoption Questions for Decision Makers", "step4_output")
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
