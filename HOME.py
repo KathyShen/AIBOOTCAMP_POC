@@ -52,6 +52,21 @@ else:
         """,
         unsafe_allow_html=True
     )
+    # Funny PETs tagline
+    st.markdown(
+        """
+        <div style='margin: 0 auto; max-width: 700px; background: rgba(255,255,255,0.92); border-radius: 10px; padding: 1.2em 1.5em 1.2em 1.5em; margin-bottom: 1.5em; text-align: center;'>
+            <span style='font-size: 1.3em;'>
+                🐾 <b>Wait! These PETs don't bark, purr, or fetch sticks...</b> 🐾<br>
+                <span style='font-size: 1.1em;'>
+                    <b>PETs</b> here means <b>Privacy Enhancing Technologies</b> <span style='font-size:1.2em;'>🔒🤖</span>,<br>
+                    not the adorable <span style='font-size:1.2em;'>🐶🐱🐦🐢</span> you might be thinking of!
+                </span>
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     st.title("Welcome to Our Site")
     st.markdown(
         """

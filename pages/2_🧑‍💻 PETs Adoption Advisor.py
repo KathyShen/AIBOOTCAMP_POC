@@ -15,7 +15,7 @@ if st.session_state.username not in ["admin", "user"]:
     st.warning("Access Denied! Please log in at the home page.")
     st.stop()
 
-st.title("🔍 PETs Adoption Advisor")
+st.title("🧑‍💻 PETs Adoption Advisor")
 
 def get_user_inputs():
     st.markdown("### 1. What are you trying to achieve?")
