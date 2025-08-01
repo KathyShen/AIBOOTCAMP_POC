@@ -1,11 +1,13 @@
-import streamlit as st
-from utils.chroma_vector_store import load_chroma
-from utils.rag_pipeline import build_qa_chain
-from utils.sidebar import show_sidebar
-import os
-#from dotenv import load_dotenv
 
-#show_sidebar()
+import streamlit as st
+import os
+from utils.sidebar import show_sidebar
+from utils.pinecone_store import init_pinecone, load_pinecone
+from utils.chroma_vector_store import load_chroma
+
+
+
+show_sidebar()
 
 # ...existing login and sidebar logic...
 
@@ -16,13 +18,27 @@ if st.session_state.username not in ["admin", "user"]:
 st.title("🔍 PETs Adoption Advisor")
 
 def get_user_inputs():
-    st.markdown("### 1. Describe your data privacy problem statement")
+    st.markdown("### 1. What are you trying to achieve?")
+    objective_options = [
+        "Match Common Customers",
+        "Enrich Datasets With Data From Other Organizations",
+        "Make More Data Available for AI"
+    ]
+    key_objective = st.selectbox(
+        "Select Key Objective",
+        options=objective_options
+    )
+    st.markdown("### 2. Please ellaborate your scenario with more details:",
+                 help="Example problem statement: 'We want to collaborate with other banks to detect fraudulent transactions across our combined datasets without exposing sensitive customer information or violating data privacy regulations. What technologies and strategies can enable secure analytics and fraud detection in this scenario?")
     problem_statement = st.text_area("Problem Statement", help="Describe your scenario and privacy needs.")
-    st.markdown("### 2. Which PET(s) are you interested in?")
+    st.markdown("### 3. Which PET(s) are you interested in?")
     pet_options = [
         "Differential Privacy",
         "Homomorphic Encryption",
         "Synthetic Data",
+        "Federated Learning",
+        "Secure Multi-Party Computation",
+        "Trusted Execution Environments",
         "Zero-knowledge Proof"
     ]
     pet_interest = st.multiselect(
@@ -30,60 +46,79 @@ def get_user_inputs():
         options=pet_options,
         help="You can select one or more privacy-enhancing technologies (PETs)."
     )
-    return problem_statement, pet_interest
+    return key_objective,problem_statement, pet_interest
+
 
 # --- User Input ---
-problem_statement, pet_interest = get_user_inputs()
+key_objective, problem_statement, pet_interest = get_user_inputs()
+
+# Input validation
+if not problem_statement:
+    st.info("Please provide a problem statement to proceed.")
+    st.stop()
 
 
-if st.button("Analyze & Advise") and problem_statement:
-    # Use Pinecone for default knowledge base
-    from utils.pinecone_store import init_pinecone, load_pinecone
-    pinecone_client = init_pinecone()
-    main_db = load_pinecone(index_name="default-knowledge", pinecone_client=pinecone_client)
-    retrievers = [main_db.as_retriever()]
-    # If user uploaded files in page 1, combine with Chroma in-memory vector DB
-    if "temp_db_dir" in st.session_state:
-        from utils.chroma_vector_store import load_chroma
-        user_db = load_chroma(st.session_state.temp_db_dir)
-        retrievers.append(user_db.as_retriever())
-    # Combine retrievers if more than one
-    if len(retrievers) > 1:
-        from langchain.retrievers import EnsembleRetriever
-        retriever = EnsembleRetriever(retrievers=retrievers)
-    else:
-        retriever = retrievers[0]
 
-    # Multi-step Q&A using multiquery
-    from langchain.chains import RetrievalQA
-    from langchain.chat_models import ChatOpenAI
-    llm = ChatOpenAI(openai_api_key=st.session_state.api_key, temperature=0)
+if st.button("Analyze & Advise"):
+    try:
+        # Set OpenAI API key if needed
+        if hasattr(st.session_state, "api_key"):
+            os.environ["OPENAI_API_KEY"] = st.session_state.api_key
 
-    # 1. Summarize privacy challenges
-    challenge_prompt = f"Summarize the key data privacy challenges in this scenario: {problem_statement}"
-    challenge_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
-    challenges = challenge_chain.run(challenge_prompt)
-    st.markdown("#### Key Data Privacy Challenges")
-    st.write(challenges)
+        # Use Pinecone for default knowledge base
+        pinecone_client = init_pinecone()
+        main_db = load_pinecone(index_name="default-knowledge", pinecone_client=pinecone_client)
+        retrievers = [main_db.as_retriever()]
+        # If user uploaded files in page 1, combine with Chroma in-memory vector DB
+        if "temp_db_dir" in st.session_state:
+            user_db = load_chroma(st.session_state.temp_db_dir)
+            retrievers.append(user_db.as_retriever())
+        # Combine retrievers if more than one
+        if len(retrievers) > 1:
+            from langchain.retrievers import EnsembleRetriever
+            retriever = EnsembleRetriever(retrievers=retrievers)
+        else:
+            retriever = retrievers[0]
 
-    # 2. Suggest PETs
-    pet_prompt = f"Based on the scenario, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges."
-    pet_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
-    suggested_pets = pet_chain.run(pet_prompt)
-    st.markdown("#### Suggested PETs")
-    st.write(suggested_pets)
+        from langchain.chains import RetrievalQA
+        from langchain.chat_models import ChatOpenAI
+        llm = ChatOpenAI(openai_api_key=st.session_state.api_key, temperature=0)
 
-    # 3. Assess suitability of user-indicated PETs
-    if pet_interest:
-        suitability_prompt = f"Assess whether the following PETs are suitable for this scenario: {', '.join(pet_interest)}. Justify your assessment."
-        suitability_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
-        suitability = suitability_chain.run(suitability_prompt)
-        st.markdown("#### Suitability Assessment of User-Selected PETs")
-        st.write(suitability)
+        # Helper to run QA and show context
+        def run_qa_and_show(prompt, section_title):
+            chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True)
+            output = chain.invoke({"query": prompt})
+            answer = output["result"] if isinstance(output, dict) and "result" in output else output
+            st.markdown(section_title)
+            st.write(answer)
+            # Show context
+            context_blurbs = []
+            if isinstance(output, dict) and "source_documents" in output:
+                for i, doc in enumerate(output["source_documents"], 1):
+                    snippet = doc.page_content if hasattr(doc, "page_content") else str(doc)
+                    source = doc.metadata.get("source") if hasattr(doc, "metadata") and "source" in doc.metadata else None
+                    context_blurbs.append(f"**Context {i}:** {snippet[:500]}" + (f"\n_Source: {source}_" if source else ""))
+            if context_blurbs:
+                with st.expander(f"Show retrieved context for {section_title.replace('#### ','')}"):
+                    for ctx in context_blurbs:
+                        st.markdown(ctx)
 
-    # 4. Suggest adoption questions
-    adoption_prompt = f"Suggest relevant adoption questions for decision makers to explore for this scenario and privacy needs."
-    adoption_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
-    adoption_questions = adoption_chain.run(adoption_prompt)
-    st.markdown("#### Adoption Questions for Decision Makers")
-    st.write(adoption_questions)
+        # 1. Summarize privacy challenges
+        challenge_prompt = f"Summarize the key data privacy challenges in this scenario: {problem_statement}"
+        run_qa_and_show(challenge_prompt, "#### Key Data Privacy Challenges")
+
+        # 2. Suggest PETs
+        pet_prompt = f"Based on the scenario, suggest potential Privacy Enhancing Technologies (PETs) that could address these challenges."
+        run_qa_and_show(pet_prompt, "#### Suggested PETs")
+
+        # 3. Assess suitability of user-indicated PETs
+        if pet_interest:
+            suitability_prompt = f"Assess whether the following PETs are suitable for this scenario: {', '.join(pet_interest)}. Justify your assessment."
+            run_qa_and_show(suitability_prompt, "#### Suitability Assessment of User-Selected PETs")
+
+        # 4. Suggest adoption questions
+        adoption_prompt = f"Suggest relevant adoption questions for decision makers to explore for this scenario and privacy needs."
+        run_qa_and_show(adoption_prompt, "#### Adoption Questions for Decision Makers")
+
+    except Exception as e:
+        st.error(f"An error occurred: {e}")

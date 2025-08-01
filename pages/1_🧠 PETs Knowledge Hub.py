@@ -128,7 +128,10 @@ if st.session_state.get("vector_db_ready"):
 
     if "qa_history" not in st.session_state:
         st.session_state.qa_history = []
-    query = st.text_area("Enter your question", key="qa_input")
+    query = st.text_area(
+        "What questions do you have about PETs? Enter your query below to search the knowledge base.",
+        key="qa_input"
+    )
     if st.button("Ask") and query:
         os.environ["OPENAI_API_KEY"] = st.session_state.api_key
         openai.api_key = st.session_state.api_key
@@ -152,7 +155,16 @@ if st.session_state.get("vector_db_ready"):
         try:
             output = chain.invoke({"query": query})
             answer = output["result"] if isinstance(output, dict) and "result" in output else output
-            st.session_state.qa_history.append((query, answer))
+            # Extract and format relevant context
+            context_blurbs = []
+            if isinstance(output, dict) and "source_documents" in output:
+                for i, doc in enumerate(output["source_documents"], 1):
+                    # Try to get a snippet or content from the document
+                    snippet = doc.page_content if hasattr(doc, "page_content") else str(doc)
+                    # Optionally, show source if available
+                    source = doc.metadata.get("source") if hasattr(doc, "metadata") and "source" in doc.metadata else None
+                    context_blurbs.append(f"**Context {i}:** {snippet[:500]}" + (f"\n_Source: {source}_" if source else ""))
+            st.session_state.qa_history.append((query, answer, context_blurbs))
         except Exception as e:
             if "401" in str(e) or "invalid_api_key" in str(e):
                 st.session_state.api_key = ""
@@ -165,9 +177,16 @@ if st.session_state.get("vector_db_ready"):
     if st.session_state.get("qa_history"):
         st.markdown("---")
         st.markdown("### Chat History")
-        for i, (q, a) in enumerate(st.session_state.qa_history, 1):
+        for i, qa in enumerate(st.session_state.qa_history, 1):
+            q = qa[0]
+            a = qa[1]
+            contexts = qa[2] if len(qa) > 2 else []
             st.markdown(f"**Q{i}:** {q}")
             st.markdown(f"**A{i}:** {a}")
+            if contexts:
+                with st.expander(f"Show retrieved context for Q{i}"):
+                    for ctx in contexts:
+                        st.markdown(ctx)
 
 import atexit
 def cleanup_temp_db():
