@@ -2,7 +2,7 @@
 from pinecone import Pinecone
 import streamlit as st
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Pinecone as LangchainPinecone
+from langchain_pinecone import Pinecone as LangchainPinecone
 
 
 # Initialize Pinecone client from Streamlit secrets
@@ -15,13 +15,14 @@ embedding = OpenAIEmbeddings(model="text-embedding-ada-002")
 
 # Load pre-existing Pinecone index using langchain's Pinecone wrapper
 def load_pinecone(index_name, pinecone_client):
-    return LangchainPinecone(index_name=index_name, embedding=embedding, pinecone_api= pinecone_client)
+    index = pinecone_client.Index(index_name)
+    return LangchainPinecone(index, embedding)
 
 # Save documents to Pinecone index using langchain's Pinecone wrapper
 def save_to_pinecone(docs, index_name, pinecone_client):
+    index = pinecone_client.Index(index_name)
     return LangchainPinecone.from_documents(
-        documents=docs,
-        embedding=embedding,
-        index_name=index_name,
-        pinecone_api=pinecone_client
+        docs,
+        embedding,
+        index
     )
