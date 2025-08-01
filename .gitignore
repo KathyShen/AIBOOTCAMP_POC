@@ -2,3 +2,7 @@ __pycache__/
 .env
 .streamlit/secrets.toml
 *.pyc
+_cleanup_temp_dirs.py
+_generate_chroma_index.py
+_generate_pinecone_index.py
+_rag_defaultknowledge_pinecone.py
