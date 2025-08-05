@@ -9,24 +9,24 @@ st.set_page_config(
 
 st.title("About Us")
 
-st.title("Key Features")
-st.write("This is a Streamlit App that demonstrates how to use the OpenAI API to build knowledge database and provide RAG enhanced Q&A response, as well as to provide personalised PETs adoption advices based on specific user scenarios.")
+st.write("We are from the PETs Team at the IMDA. This is a Streamlit App to help organisations who are interested in PETs better understand PETs and how to adopt them. The PETs Knowledge Hub uses a LLM and where relevant, additional data from user, to build a knowledge database and to provide RAG-enhanced Q&A response. The PETs Adoption Advisor provides personalised advice on what PETs the user can adopt based on a specific problem statement, and generates a checklist for the user to consider.")
 
 st.markdown("<u><b>Regarding the Login</b></u>", unsafe_allow_html=True)
 st.markdown("""
 - **For Admin users:** You will be able to access all features without the need to provide your own OpenAI API key, as the system provides you a key automatically at the backend.  
-- **For Normal users:** You will need to submit your own OpenAI API key to proceed on each page. The key you submitted is only temporarily stored in the session state and will not be saved permanently.
+- **For other users:** You will need to submit your own OpenAI API key before you can use each feature. The key you submitted is only temporarily stored in the session state and will not be saved permanently.
 """)
 
 st.markdown("<u><b>How to use this App</b></u>", unsafe_allow_html=True)
 with st.expander("**Feature 1 PETs Knowledge Hub:**"):
-    st.write("Build Your Own Knowledge Base and Get RAG Enhanced Q&A Response")
+    st.write("Build Your Own Knowledge Base and Get RAG-enhanced Q&A Response")
     st.write("1. (Optional) Upload your documents to enhance the default PETs Knowledge Base.")
     st.write("2. Once the documents are uploaded, you may generate the enhanced Knowledge Base.")
     st.write("3. Based on the knowledge base, you can ask questions and retrieve relevant context from the knowledge base.")
 
 with st.expander("**Feature 2 PETs Adoption Advisor:**"):
     st.write("Submit Your Own Problem Statement and Get Personalised PETs Adoption Advice")
-    st.write("1. Write your problem statement in the text area.")
-    st.write("2. Click the 'Submit' button.")
-    st.write("3. The app will generate the relevant advice for your scenario.")
+    st.write("1. Select your key objective from the dropdown list.")
+    st.write("2. Write your problem statement in the text area.")
+    st.write("3. Select the PETs you are interested to apply from the dropdown list.")
+    st.write("4. Click the 'Analyze & Advise' button. The app will generate the relevant advice for your scenario.")
