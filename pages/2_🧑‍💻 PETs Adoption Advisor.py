@@ -92,27 +92,7 @@ if st.button("Analyze & Advise"):
         from langchain.chat_models import ChatOpenAI
         llm = ChatOpenAI(openai_api_key=st.session_state.api_key, temperature=0)
 
-        # Helper to run QA and show context
-        def run_qa_and_show(prompt, section_title):
-            chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=True)
-            output = chain.invoke({"query": prompt})
-            answer = output["result"] if isinstance(output, dict) and "result" in output else output
-            st.markdown(section_title)
-            st.write(answer)
-            # Show context
-            context_blurbs = []
-            if isinstance(output, dict) and "source_documents" in output:
-                for i, doc in enumerate(output["source_documents"], 1):
-                    snippet = doc.page_content if hasattr(doc, "page_content") else str(doc)
-                    source = doc.metadata.get("source") if hasattr(doc, "metadata") and "source" in doc.metadata else None
-                    context_blurbs.append(f"**Context {i}:** {snippet[:500]}" + (f"\n_Source: {source}_" if source else ""))
-            if context_blurbs:
-                with st.expander(f"Show retrieved context for {section_title.replace('#### ','')}"):
-                    for ctx in context_blurbs:
-                        st.markdown(ctx)
-
-
-
+       
         # Chain-of-thoughts: each step includes previous outputs as context
         # 1. Summarize privacy challenges
         challenge_prompt = f"""
