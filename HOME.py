@@ -58,19 +58,19 @@ else:
         <div class='site-map' style='margin: 0 auto; max-width: 700px;'>
             <h3>Site Map</h3>
             <ul>
-                <li><b>🧠 PETs Knowledge Hub</b>: Explore privacy enhancing technologies, based on the default knowledge database and any files uploaded by user</li>
-                <li><b>🧑‍💻 PETs Adoption Advisor</b>: Get personalized advice for adopting PETs, based on specific scenarios given by users</li>
-                <li><b>📬 Feedback to PETs Team </b>: Provide useful reference links and accept user feedbacks </li>
+                <li><b>🧠 PETs Knowledge Hub</b>: Explore PETs, based on the default knowledge database and any files uploaded by the user</li>
+                <li><b>🧑‍💻 PETs Adoption Advisor</b>: Get personalised advice on what PETs to adopt, based on the specific problem statement provided by the user</li>
+                <li><b>📬 Feedback </b>: Offer useful reference links to the user and accept feedback from the user on the web app </li>
             </ul>
             <div style='margin: 2em 0 1.5em 0; text-align: center;'>
                 <span style='font-size: 1.3em;'>
                     🐾 <span style='font-size:0.98em; color:#888;'>Wait! These PETs don't bark, purr, or fetch sticks...</span> 🐾<br>
                     <span style='font-size: 0.98em; color:#888;'>
-                        <b>PETs</b> here means <b>Privacy Enhancing Technologies</b>
+                        <b>PETs</b> here mean <b>Privacy Enhancing Technologies</b>
                         <span style="font-size:0.98em;">🛡️🖥️🆔</span>,<br>
                         not the adorable
                         <span style='font-size:0.98em;'>🐶🐱🐦🐢</span>
-                        you might be thinking of!
+                        you may be thinking of!
                     </span>
                 </span>
             </div>
