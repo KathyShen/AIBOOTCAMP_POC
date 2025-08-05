@@ -79,7 +79,7 @@ st.markdown("""
 
 # Text area with session state binding
 email_text = st.text_area(
-    "Write your message to the PDPC PET team (max 500 words):",
+    "Write your message to the PETs Team (max 500 words):",
     key="email_text", height=200
 )
 
