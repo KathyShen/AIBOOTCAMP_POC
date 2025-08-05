@@ -25,7 +25,7 @@ st.title("🧑‍💻 PETs Adoption Advisor")
 def get_user_inputs():
     st.markdown("### 1. What are you trying to achieve?")
     objective_options = [
-        "Match Common Customers",
+        "Match Common Customers With Different Datasets",
         "Enrich Datasets With Data From Other Organizations",
         "Make More Data Available for AI"
     ]
@@ -33,7 +33,7 @@ def get_user_inputs():
         "Select Key Objective",
         options=objective_options
     )
-    st.markdown("### 2. Please ellaborate your scenario with more details:")
+    st.markdown("### 2. Please elaborate on your problem statement with more details:")
     problem_statement = st.text_area("Problem Statement", help="Example: We want to collaborate with other banks to detect fraudulent transactions across our combined datasets without exposing sensitive customer information or violating data privacy regulations. What technologies and strategies can enable secure analytics and fraud detection in this scenario?")
     st.markdown("### 3. Which PET(s) are you interested in?")
     pet_options = [

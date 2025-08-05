@@ -62,11 +62,11 @@ if not is_admin and not st.session_state.api_key_valid:
 
 # --- Optional file upload logic ---
 choice = st.radio(
-    "Would you like to upload your own files for Q&A?",
-    ("Use default knowledge base", "Upload your own files to enhance the knowledge base")
+    "Would you like to upload your own file(s) to enhance the knowledge base?",
+    ("Use default knowledge base", "Upload your own file(s) to enhance the knowledge base")
 )
 
-use_user_files = choice == "Upload your own files to enhance the knowledge base"
+use_user_files = choice == "Upload your own file(s) to enhance the knowledge base"
 
 
 # --- Chroma setup ---
@@ -146,7 +146,7 @@ if st.session_state.get("vector_db_ready"):
     if "qa_history" not in st.session_state:
         st.session_state.qa_history = []
     query = st.text_area(
-        "What questions do you have about PETs? Enter your query below to search the knowledge base.",
+        "What questions do you have about PETs? Enter your query below.",
         key="qa_input"
     )
     if st.button("Ask - LLM Powered with RAG") and query:
