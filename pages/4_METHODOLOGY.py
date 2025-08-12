@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_mermaid import st_mermaid
+from streamlit-mermaid import st_mermaid
 
 st.set_page_config(
     layout="centered",
