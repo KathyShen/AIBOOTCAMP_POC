@@ -1,5 +1,6 @@
 import streamlit as st
-from streamlit_mermaid import st_mermaid
+import streamlit as st
+
 
 st.set_page_config(
     layout="centered",
@@ -12,9 +13,10 @@ st.markdown("""
 This page explains the overall methodology, data flow, and logic flow of the PETs Advisor App. The diagrams below illustrate how user input, knowledge bases, and AI models interact to deliver personalized PETs advice and RAG-enhanced Q&A.
 """)
 
-# Data Flow Chart (Mermaid)
+    
+# Data Flow Chart (Mermaid as code block)
 st.markdown("#### **Data Flow Overview**")
-st_mermaid('''
+st.code('''mermaid
 graph TD
     A[User Input: Problem Statement, Objective, PETs] --> B[Streamlit App]
     B --> C[Default PETs Knowledge Base (Chroma DB)]
@@ -23,11 +25,11 @@ graph TD
     C & E --> F[Retriever(s)]
     F --> G[LLM (OpenAI)]
     G --> H[Response: Q&A, PETs Advice, Checklist]
-''')
+''', language='markdown')
 
-# Logic Flow Chart (Mermaid)
+# Logic Flow Chart (Mermaid as code block)
 st.markdown("#### **Logic Flow Overview**")
-st_mermaid('''
+st.code('''mermaid
 graph TD
     U[User: Selects Objective, Enters Problem, Chooses PETs] --> S[Streamlit Page]
     S --> V[Build/Load Vector DBs]
@@ -35,7 +37,7 @@ graph TD
     R --> Q[Run RetrievalQA Chain]
     Q --> LLM[LLM Reasoning]
     LLM --> O[Output: Challenges, Use Cases, PETs, Checklist]
-''')
+''', language='markdown')
 
 st.markdown("""
 **Legend:**
