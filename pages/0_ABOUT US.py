@@ -7,6 +7,16 @@ st.set_page_config(
 )
 # endregion <--------- Streamlit App Configuration --------->
 
+# Disclaimer (collapsible)
+with st.expander("IMPORTANT NOTICE: Disclaimer", expanded=False):
+    st.markdown("""
+    **IMPORTANT NOTICE:** This web application is a prototype developed for educational purposes only. The information provided here is NOT intended for real-world usage and should not be relied upon for making any decisions, especially those related to financial, legal, or healthcare matters.
+
+    Furthermore, please be aware that the LLM may generate inaccurate or incorrect information. You assume full responsibility for how you use any generated output.
+
+    Always consult with qualified professionals for accurate and personalized advice.
+    """)
+
 st.title("About Us")
 
 st.write("We are from the PETs Team at the IMDA. This is a Streamlit App to help organisations who are interested in PETs better understand PETs and how to adopt them. The PETs Knowledge Hub uses a LLM and where relevant, additional data from user, to build a knowledge database and to provide RAG-enhanced Q&A response. The PETs Adoption Advisor provides personalised advice on what PETs the user can adopt based on a specific problem statement, and generates a checklist for the user to consider.")
